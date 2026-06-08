@@ -57,7 +57,7 @@ Three independent microservices, each with its own database. AI insight generati
 
 For a full breakdown of service boundaries, database schemas, Kafka message contracts, API design, security model, cost management strategy, and architectural decision log:
 
-→ [ARCHITECTURE.md](./Architecture.md)
+→ [Architecture.md](./docs/Architecture.md)
 
 ---
 
