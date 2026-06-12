@@ -9,6 +9,9 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export {ApplicationConfig};
 
@@ -34,9 +37,18 @@ export class AuthServiceApplication extends BootMixin(
     // Customize @loopback/boot Booter Conventions here
     this.bootOptions = {
       controllers: {
-        // Customize ControllerBooter Conventions here
         dirs: ['controllers'],
         extensions: ['.controller.js'],
+        nested: true,
+      },
+      repositories: {
+        dirs: ['repositories'],
+        extensions: ['.repository.js'],
+        nested: true,
+      },
+      services: {
+        dirs: ['services'],
+        extensions: ['.service.js'],
         nested: true,
       },
     };

@@ -1,0 +1,50 @@
+<div class="login-shell">
+  <div class="login-panel">
+    <div class="brand">
+      <div class="brand-title">Finsight</div>
+      <div class="brand-tag">Create your AI finance account</div>
+    </div>
+
+    <p class="hero-copy">
+      Start tracking spending, forecasting cashflow, and uncovering smarter money habits with one
+      secure sign up.
+    </p>
+
+    <form class="login-form">
+      <mat-form-field appearance="outline" class="full-width modern-field">
+        <mat-label>Full name</mat-label>
+        <input matInput name="fullName" type="text" placeholder="Jane Doe" autocomplete="name" />
+        <mat-icon matSuffix>person</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width modern-field">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" placeholder="hello@finsight.ai" autocomplete="email" />
+        <mat-icon matSuffix>email</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width modern-field">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          type="password"
+          placeholder="Create a passphrase"
+          autocomplete="new-password"
+        />
+        <mat-icon matSuffix>lock</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width modern-field">
+        <mat-label>Confirm password</mat-label>
+        <input matInput type="password" placeholder="Repeat password" autocomplete="new-password" />
+        <mat-icon matSuffix>check</mat-icon>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" class="login-button full-width">
+        Create account
+      </button>
+    </form>
+
+    <div class="page-cta">Already have an account? <a routerLink="/">Sign In</a></div>
+  </div>
+</div>

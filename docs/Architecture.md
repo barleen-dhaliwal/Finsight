@@ -97,27 +97,37 @@ flowchart LR
 
 ### 4.1 Auth Service
 
-**Responsibility:** Owns user identity. Issues and validates JWTs. No other service touches user credentials or the users table.
+**Responsibility:** Owns user identity and session lifecycle. Issues, rotates, and verifies JWTs; manages user records and refresh tokens. Implemented with LoopBack 4.
 
-**Database tables:**
+**Runtime behaviour (actual implementation):**
 
-users (id, email, password_hash, created_at, updated_at)
-refresh_tokens (id, user_id, token, expires_at, revoked, created_at)
+- The HTTP controllers are thin and delegate business logic to a `UserService` class which implements registration, login, refresh, and logout flows.
+- Passwords are hashed using `bcrypt` with the cost factor drawn from `process.env.BCRYPT_ROUNDS` (exposed in code as `ROUNDS`).
+- Access and refresh tokens are JWTs produced with `jsonwebtoken`. Expiry values are configured as integer seconds via `JWT_ACCESS_TOKEN_EXPIRY_IN_SECONDS` and `JWT_REFRESH_TOKEN_EXPIRY_IN_SECONDS` environment variables.
+- On login a refresh token is created and persisted to the `refresh_tokens` table (the code stores the token value in the `token` column). The refresh token is later looked up by exact token value when exchanging or revoking.
+- The refresh flow verifies the provided refresh token, ensures it exists in the DB, deletes the old row, and inserts a rotated refresh token with a new expiry.
+- Logout is implemented by deleting stored refresh token rows matching the provided token (no separate `revoked` flag in the current implementation).
 
-**API:**
+**Database tables (summary):**
+
+users (id, email, password_hash, name, created_at, updated_at)
+refresh_tokens (id, user_id, token, expires_at, created_at)
+
+**API (implemented endpoints):**
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/auth/register` | Create a new user account |
-| POST | `/auth/login` | Authenticate, receive access + refresh tokens |
-| POST | `/auth/refresh` | Exchange refresh token for new access token |
-| POST | `/auth/logout` | Revoke the refresh token |
+| POST | `/auth/register` | Create a new user account (returns id, name, email, createdAt) |
+| POST | `/auth/login` | Authenticate, receive `accessToken` + `refreshToken` |
+| POST | `/auth/refresh` | Exchange a valid refresh token for a new access token and rotated refresh token |
+| POST | `/auth/logout` | Revoke (delete) the provided refresh token |
 
-**Key decisions:**
+**Key decisions & notes (current):**
 
-- Access tokens are short-lived (15 minutes). Refresh tokens are longer-lived (7 days) and stored in the database so they can be explicitly revoked.
-- The Core Service validates JWTs locally using the shared secret — it does not call the Auth Service on the hot path.
-- Passwords hashed with bcrypt, cost factor 12 minimum.
+- Access tokens are short-lived by default (15 minutes) and validated locally by downstream services using the shared JWT secret — no network round-trip to Auth Service on each request.
+- Refresh tokens are longer-lived (default 7 days) and persisted to the database so they can be rotated and deleted (revoked) server-side.
+- Refresh tokens are stored in the `token` column (the running implementation persists the raw token string). If you later want to store a hash instead, the service code and model/table must be updated consistently.
+- Passwords are hashed with `bcrypt`; the cost factor is configurable via environment variables.
 
 ---
 
@@ -186,6 +196,7 @@ CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -195,7 +206,6 @@ CREATE TABLE refresh_tokens (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   token TEXT UNIQUE NOT NULL,
   expires_at TIMESTAMPTZ NOT NULL,
-  revoked BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
