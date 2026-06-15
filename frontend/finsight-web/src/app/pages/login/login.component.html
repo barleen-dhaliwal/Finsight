@@ -9,10 +9,16 @@
       Analyze transactions, uncover trends, and gain a clearer view of your finances.
     </p>
 
-    <form class="login-form">
+    <form class="login-form" [formGroup]="loginForm">
       <mat-form-field appearance="outline" class="full-width modern-field">
         <mat-label>Email</mat-label>
-        <input matInput type="email" placeholder="hello@finsight.ai" autocomplete="email" />
+        <input
+          matInput
+          type="email"
+          placeholder="hello@finsight.ai"
+          autocomplete="email"
+          formControlName="email"
+        />
         <mat-icon matSuffix>person</mat-icon>
       </mat-form-field>
 
@@ -20,14 +26,24 @@
         <mat-label>Password</mat-label>
         <input
           matInput
-          type="password"
-          placeholder="Secure passphrase"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Password"
           autocomplete="current-password"
+          formControlName="password"
         />
-        <mat-icon matSuffix>lock</mat-icon>
+        <mat-icon matSuffix (click)="showPassword = !showPassword">
+          {{ showPassword ? 'visibility' : 'visibility_off' }}
+        </mat-icon>
       </mat-form-field>
 
-      <button mat-raised-button color="primary" class="login-button full-width">Sign in</button>
+      <button
+        mat-raised-button
+        color="primary"
+        class="login-button full-width"
+        (click)="onSubmit()"
+      >
+        Sign in
+      </button>
     </form>
 
     <div class="page-cta">Don’t have an account? <a routerLink="/sign-up">Sign Up</a></div>

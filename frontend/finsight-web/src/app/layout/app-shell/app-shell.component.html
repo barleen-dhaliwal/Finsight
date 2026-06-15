@@ -1,0 +1,54 @@
+<div class="app-shell-container">
+  <!-- Top Navigation Bar -->
+  <mat-toolbar color="primary" class="app-toolbar">
+    <button mat-icon-button (click)="toggleSidenav()" class="sidenav-toggle">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <div class="brand-title">
+      <span class="finsight-logo">Finsight</span>
+    </div>
+
+    <span class="spacer"></span>
+
+    <!-- User Menu -->
+    <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-trigger">
+      <mat-icon>account_circle</mat-icon>
+      <span class="user-name">{{ user()?.name || 'User' }}</span>
+    </button>
+
+    <mat-menu #userMenu="matMenu">
+      <button mat-menu-item disabled>
+        <mat-icon>email</mat-icon>
+        <span>{{ user()?.email }}</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </mat-toolbar>
+
+  <!-- Main Content Area -->
+  <mat-sidenav-container class="sidenav-container">
+    <!-- Sidebar Navigation -->
+    <mat-sidenav #sidenav [opened]="sidenavOpened()" mode="side" class="sidebar">
+      <mat-nav-list>
+        @for (item of navItems; track item.route) {
+          <mat-list-item [routerLink]="item.route" routerLinkActive="active">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </mat-list-item>
+        }
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <!-- Page Content -->
+    <mat-sidenav-content class="content-area">
+      <div class="page-container">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

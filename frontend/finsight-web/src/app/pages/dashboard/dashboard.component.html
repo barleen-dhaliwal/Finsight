@@ -1,0 +1,190 @@
+<!--<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p class="subtitle">Your financial overview</p>
+  </div>
+-->
+<!-- Summary Cards -->
+<!-- <div class="summary-cards">
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-icon">
+          <mat-icon>trending_down</mat-icon>
+        </div>
+        <div class="card-content">
+          <p class="card-label">Total Spending</p>
+          <p class="card-value">{{ formatCurrency(summary()?.totalExpenses ?? 0) }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-icon top-category">
+          <mat-icon>category</mat-icon>
+        </div>
+        <div class="card-content">
+          <p class="card-label">Top Category</p>
+          <p class="card-value">{{ summary()?.topCategory?.name ?? 'N/A' }}</p>
+          <p class="card-subtitle">{{ formatCurrency(summary()?.topCategory?.amount ?? 0) }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-icon savings">
+          <mat-icon>savings</mat-icon>
+        </div>
+        <div class="card-content">
+          <p class="card-label">Savings Rate</p>
+          <p class="card-value">{{ summary()?.savingsRate ?? 0 | number: '1.0-0' }}%</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-icon income">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="card-content">
+          <p class="card-label">Total Income</p>
+          <p class="card-value">{{ formatCurrency(summary()?.totalIncome ?? 0) }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div> -->
+
+<!-- Main Content Grid -->
+<!-- <div class="dashboard-grid"> -->
+<!-- Recent Transactions -->
+<!-- <div class="grid-item">
+      <mat-card class="content-card">
+        <mat-card-header>
+          <mat-card-title>Recent Transactions</mat-card-title>
+          <a routerLink="/app/transactions" class="view-all-link">View all →</a>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          @if (recentTransactions().length > 0) {
+            <table mat-table [dataSource]="recentTransactions()" class="transactions-table"> -->
+<!-- Date Column -->
+<!-- <ng-container matColumnDef="date"> -->
+<!-- <th mat-header-cell>Date</th> -->
+<!-- <td mat-cell>{{ formatDate($any($event)?.element?.date) }}</td> -->
+<!-- </ng-container> -->
+
+<!-- Description Column -->
+<!-- <ng-container matColumnDef="description"> -->
+<!-- <th mat-header-cell>Description</th> -->
+<!-- <td mat-cell>{{ $any($event)?.element?.description }}</td> -->
+<!-- </ng-container> -->
+
+<!-- Category Column -->
+<!-- <ng-container matColumnDef="category"> -->
+<!-- <th mat-header-cell>Category</th> -->
+<!-- <td mat-cell>{{ $any($event)?.element?.category }}</td> -->
+<!-- </ng-container> -->
+
+<!-- Amount Column -->
+<!-- <ng-container matColumnDef="amount"> -->
+<!-- <th mat-header-cell>Amount</th> -->
+<!-- <td mat-cell> -->
+<!-- {{ formatCurrency($any($event)?.element?.amount) }} -->
+<!-- </td> -->
+<!-- </ng-container> -->
+
+<!-- <tr mat-header-row></tr>
+              @for (transaction of recentTransactions(); track transaction.id) {
+                <tr mat-row>
+                  <td mat-cell>{{ formatDate(transaction.date) }}</td>
+                  <td mat-cell>{{ transaction.description }}</td>
+                  <td mat-cell>{{ transaction.category }}</td>
+                  <td
+                    mat-cell
+                    [class.expense]="transaction.type === 'expense'"
+                    [class.income]="transaction.type === 'income'"
+                  >
+                    {{ formatCurrency(transaction.amount) }}
+                  </td>
+                </tr>
+              }
+            </table> -->
+<!-- } @else {
+            <p class="empty-state">No recent transactions</p>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div> -->
+
+<!-- Featured Insight -->
+<!-- <div class="grid-item">
+      <mat-card class="content-card insight-card">
+        <mat-card-header>
+          <mat-card-title>Featured Insight</mat-card-title>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          @if (featuredInsight()) {
+            <div class="insight-content">
+              <p>{{ featuredInsight()?.content }}</p>
+              <p class="insight-date">
+                Generated: {{ formatDate(featuredInsight()?.generatedAt ?? '') }}
+              </p>
+            </div>
+            <button
+              mat-raised-button
+              color="accent"
+              (click)="refreshInsights()"
+              class="refresh-btn"
+            >
+              <mat-icon>refresh</mat-icon>
+              Refresh Insights
+            </button>
+            <a routerLink="/app/insights" class="view-all-link">View all insights →</a>
+          } @else {
+            <p class="empty-state">No insights available yet. Check back soon!</p>
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="refreshInsights()"
+              class="refresh-btn"
+            >
+              <mat-icon>refresh</mat-icon>
+              Generate Insights
+            </button>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div> -->
+
+<!-- Category Breakdown -->
+<!-- @if (categoryBreakdown().length > 0) {
+    <mat-card class="content-card">
+      <mat-card-header>
+        <mat-card-title>Spending by Category</mat-card-title>
+      </mat-card-header>
+      <mat-divider></mat-divider>
+      <mat-card-content>
+        <div class="category-breakdown">
+          @for (category of categoryBreakdown(); track category.category) {
+            <div class="category-item">
+              <div class="category-header">
+                <span class="category-name">{{ category.category }}</span>
+                <span class="category-percentage">{{ category.percentage }}%</span>
+              </div>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="category.percentage"
+                class="category-bar"
+              ></mat-progress-bar>
+              <span class="category-amount">{{ formatCurrency(category.amount) }}</span>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div> -->

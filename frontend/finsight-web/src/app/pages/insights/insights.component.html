@@ -1,0 +1,48 @@
+<!-- <div class="insights-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>AI Insights</h1>
+      <p class="subtitle">Personalized financial analysis and recommendations</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="refreshInsights()" [disabled]="refreshing()">
+      <mat-icon>refresh</mat-icon>
+      {{ refreshing() ? 'Generating...' : 'Generate New Insights' }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading insights...</p>
+    </div>
+  } @else if (insights().length > 0) {
+    <div class="insights-grid">
+      @for (insight of insights(); track insight.id) {
+        <mat-card class="insight-card">
+          <mat-card-header>
+            <div class="insight-header">
+              <mat-card-title>{{ insight.insightType }}</mat-card-title>
+              <span class="insight-date">{{ formatDate(insight.generatedAt) }}</span>
+            </div>
+          </mat-card-header>
+          <mat-divider></mat-divider>
+          <mat-card-content>
+            <p class="insight-content">{{ insight.content }}</p>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  } @else {
+    <mat-card class="empty-state-card">
+      <mat-card-content>
+        <mat-icon class="empty-icon">lightbulb_outline</mat-icon>
+        <h3>No Insights Yet</h3>
+        <p>Get started by generating insights about your spending patterns and financial health.</p>
+        <button mat-raised-button color="primary" (click)="refreshInsights()">
+          <mat-icon>refresh</mat-icon>
+          Generate Insights
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+</div> -->

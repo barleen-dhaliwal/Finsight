@@ -1,0 +1,208 @@
+.app-shell-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 0 0.5rem;
+  min-height: 56px;
+  gap: 0.5rem;
+}
+
+.sidenav-toggle {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.finsight-logo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
+.spacer {
+  flex: 1 1 auto;
+  min-width: 0.5rem;
+}
+
+.logout-btn {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.95rem;
+  min-height: 40px;
+  min-width: 0;
+  border-radius: 999px;
+  flex-shrink: 0;
+  margin: 0;
+  overflow: visible;
+}
+
+.user-menu-trigger mat-icon {
+  font-size: 1.6rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  line-height: 1;
+}
+
+.user-name {
+  display: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0;
+  background: none;
+}
+
+@media (min-width: 768px) {
+  .user-name {
+    display: inline-block;
+    max-width: 150px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .user-name {
+    display: inline-block;
+    max-width: 180px;
+  }
+
+  .app-toolbar {
+    padding: 0 1rem;
+  }
+}
+
+.sidenav-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  padding: 1rem 0;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+}
+
+.sidebar mat-nav-list {
+  padding: 0;
+}
+
+.sidebar mat-list-item {
+  height: auto;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid transparent;
+  transition: all 0.3s ease;
+  color: #111827 !important;
+}
+
+.sidebar mat-list-item,
+.sidebar mat-list-item *,
+.sidebar mat-list-item span[matListItemTitle],
+.sidebar mat-list-item span[matListItemIcon],
+.sidebar mat-list-item .mat-list-item-content,
+.sidebar mat-list-item .mat-list-item-title,
+.sidebar mat-list-item .mat-list-text,
+.sidebar mat-list-item mat-icon,
+.sidebar mat-list-item .mat-list-item-icon {
+  color: #111827 !important;
+}
+
+.sidebar mat-list-item:hover {
+  background-color: #eef2ff;
+}
+
+.sidebar mat-list-item:hover,
+.sidebar mat-list-item:hover *,
+.sidebar mat-list-item:hover span[matListItemTitle],
+.sidebar mat-list-item:hover mat-icon,
+.sidebar mat-list-item:hover .mat-list-item-icon {
+  color: #0f172a !important;
+}
+
+.sidebar mat-list-item.active {
+  background-color: #e3f2fd;
+  border-left-color: #1d4ed8;
+}
+
+.sidebar mat-list-item.active,
+.sidebar mat-list-item.active *,
+.sidebar mat-list-item.active span[matListItemTitle],
+.sidebar mat-list-item.active mat-icon,
+.sidebar mat-list-item.active .mat-list-item-icon {
+  color: #1d4ed8 !important;
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f5f7fa;
+}
+
+.page-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .page-container {
+    padding: 1rem;
+  }
+
+  .app-toolbar {
+    padding: 0 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+  }
+
+  .finsight-logo {
+    font-size: 0.95rem;
+  }
+
+  .page-container {
+    padding: 0.75rem;
+  }
+
+  .user-name {
+    display: none !important;
+  }
+
+  .app-toolbar {
+    min-height: 48px;
+  }
+}

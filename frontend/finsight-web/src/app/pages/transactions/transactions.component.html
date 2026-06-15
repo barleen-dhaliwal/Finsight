@@ -1,0 +1,199 @@
+<!-- <div class="transactions-page">
+  <div class="page-header">
+    <div>
+      <h1>Transactions</h1>
+      <p class="subtitle">
+        Track your income and expenses, filter activity, and add new transactions.
+      </p>
+    </div>
+  </div>
+
+  <mat-card class="transaction-panel">
+    <mat-card-title>Add Transaction</mat-card-title>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <form [formGroup]="transactionForm" class="transaction-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Amount</mat-label>
+            <input matInput type="number" formControlName="amount" placeholder="0.00" />
+            <span matPrefix>$</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category">
+              <mat-option *ngFor="let category of categories" [value]="category">
+                {{ category }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Date</mat-label>
+            <input matInput type="date" formControlName="date" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type">
+              <mat-option value="expense">Expense</mat-option>
+              <mat-option value="income">Income</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row form-row-full">
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Description</mat-label>
+            <input matInput type="text" formControlName="description" placeholder="Optional note" />
+          </mat-form-field>
+
+          <label class="checkbox-field">
+            <input type="checkbox" formControlName="discretionary" />
+            Discretionary
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="addTransaction()"
+            [disabled]="!transactionForm.valid"
+          >
+            <mat-icon>add</mat-icon>
+            Add Transaction
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="filter-panel">
+    <mat-card-title>Filter Transactions</mat-card-title>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filter-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Start Date</mat-label>
+            <input matInput type="date" formControlName="startDate" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>End Date</mat-label>
+            <input matInput type="date" formControlName="endDate" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category">
+              <mat-option value="">All categories</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category">
+                {{ category }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type">
+              <mat-option value="">All types</mat-option>
+              <mat-option value="income">Income</mat-option>
+              <mat-option value="expense">Expense</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="button" (click)="applyFilters()">
+            <mat-icon>filter_list</mat-icon>
+            Apply
+          </button>
+          <button mat-stroked-button type="button" (click)="clearFilters()">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-panel">
+    <mat-card-title>Transaction History</mat-card-title>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <div *ngIf="transactions().length > 0; else noTransactions">
+        <div class="table-wrapper">
+          <table mat-table [dataSource]="transactions()" class="transactions-table">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Date</th>
+              <td mat-cell *matCellDef="let row">{{ formatDate(row.date) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef>Description</th>
+              <td mat-cell *matCellDef="let row">{{ row.description }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef>Category</th>
+              <td mat-cell *matCellDef="let row">{{ row.category }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Amount</th>
+              <td
+                mat-cell
+                *matCellDef="let row"
+                [ngClass]="{ expense: row.type === 'expense', income: row.type === 'income' }"
+              >
+                {{ formatCurrency(row.amount) }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="discretionary">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let row">
+                <span
+                  class="badge"
+                  [ngClass]="{ discretionary: row.discretionary, essential: !row.discretionary }"
+                >
+                  {{ row.discretionary ? 'Discretionary' : 'Essential' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-icon-button color="warn" (click)="deleteTransaction(row.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+        </div>
+
+        <mat-paginator
+          [length]="totalTransactions()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="[10, 20, 50]"
+          (page)="onPageChange($event)"
+        >
+        </mat-paginator>
+      </div>
+
+      <ng-template #noTransactions>
+        <div class="empty-state">
+          <p>No transactions found. Add a new transaction to begin tracking your spending.</p>
+        </div>
+      </ng-template>
+    </mat-card-content>
+  </mat-card>
+</div> -->
