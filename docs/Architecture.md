@@ -115,12 +115,12 @@ refresh_tokens (id, user_id, token, expires_at, created_at)
 
 **API (implemented endpoints):**
 
-| Method | Path | Description |
-|---|---|---|
-| POST | `/auth/register` | Create a new user account (returns id, name, email, createdAt) |
-| POST | `/auth/login` | Authenticate, receive `accessToken` + `refreshToken` |
-| POST | `/auth/refresh` | Exchange a valid refresh token for a new access token and rotated refresh token |
-| POST | `/auth/logout` | Revoke (delete) the provided refresh token |
+| Method | Path             | Description                                                                     |
+| ------ | ---------------- | ------------------------------------------------------------------------------- |
+| POST   | `/auth/register` | Create a new user account (returns id, name, email, createdAt)                  |
+| POST   | `/auth/login`    | Authenticate, receive `accessToken` + `refreshToken`                            |
+| POST   | `/auth/refresh`  | Exchange a valid refresh token for a new access token and rotated refresh token |
+| POST   | `/auth/logout`   | Revoke (delete) the provided refresh token                                      |
 
 **Key decisions & notes (current):**
 
@@ -135,9 +135,11 @@ refresh_tokens (id, user_id, token, expires_at, created_at)
 
 **Responsibility:** The domain heart of Finsight. Owns all financial data — transactions, categories, analytics, and insights. Coordinates insight generation by publishing to Kafka and consuming results.
 
+Current implementation exposes authenticated transaction CRUD plus authenticated category read endpoints. Categories are seeded during migration from a default category list defined in `src/seeds/category.seed.ts`.
+
 **Database tables:**
-transactions (id, user_id, amount, category_id, description, date, type, created_at, updated_at)
-categories (id, user_id, name, type, is_default, created_at)
+transactions (id, user_id, amount, category_id, description, created_at, updated_at)
+categories (id, user_id, name, type, is_discretionary, created_at)
 insights (id, user_id, content, insight_type, status, generated_at, created_at)
 insight_requests (id, user_id, requested_at, debounce_expires_at)
 
@@ -145,27 +147,39 @@ The `status` column on `insights` cycles through `pending → ready | failed`.
 
 The `insight_requests` table enforces the debounce window — before publishing a Kafka message on a manual trigger, the service checks whether a request exists within the cooldown period for that user.
 
-**API:**
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/transactions` | List transactions for authenticated user |
-| POST | `/transactions` | Create a transaction |
-| PUT | `/transactions/:id` | Update a transaction |
-| DELETE | `/transactions/:id` | Delete a transaction |
-| GET | `/categories` | List categories |
-| POST | `/categories` | Create a custom category |
-| GET | `/analytics/summary` | Monthly income/expense summary |
-| GET | `/analytics/trends` | Spending trends over a rolling period |
-| GET | `/analytics/category-breakdown` | Spend breakdown by category |
-| GET | `/insights` | Fetch latest AI insights for the user |
-| POST | `/insights/trigger` | Manually trigger insight generation (debounced) |
-
 **Insight coordination flow:**
 
 1. Nightly cron fires. For each active user with transactions in the past 30 days, the Core Service assembles a financial summary payload and publishes it to `insight-requests`.
 2. Alternatively, a user hits `POST /insights/trigger`. The service checks `insight_requests` for a recent entry within the debounce window. If none exists, it publishes. If one exists, it returns a `429` with the time remaining.
 3. The Core Service also runs as a Kafka consumer on `insight-results`. When a result arrives, it writes the content to the `insights` table and updates `status` to `ready` or `failed`.
+
+All transaction and category access is scoped by the authenticated user's `user_id`, extracted from the JWT bearer token.
+
+**API:**
+
+| Method | Path                            | Description                                     |
+| ------ | ------------------------------- | ----------------------------------------------- |
+| GET    | `/transactions`                 | List transactions for authenticated user        |
+| POST   | `/transactions`                 | Create a transaction                            |
+| PUT    | `/transactions/:id`             | Update a transaction                            |
+| DELETE | `/transactions/:id`             | Delete a transaction                            |
+| GET    | `/categories`                   | List categories                                 |
+| GET    | `/categories/count`             | Count categories                                |
+| GET    | `/categories/{id}`              | Fetch a single category                         |
+| POST   | `/categories`                   | Create a custom category                        |
+| GET    | `/analytics/summary`            | Monthly income/expense summary                  |
+| GET    | `/analytics/trends`             | Spending trends over a rolling period           |
+| GET    | `/analytics/category-breakdown` | Spend breakdown by category                     |
+| GET    | `/insights`                     | Fetch latest AI insights for the user           |
+| POST   | `/insights/trigger`             | Manually trigger insight generation (debounced) |
+
+**Current implementation notes:**
+
+- The Core Service uses LoopBack's authentication component and a custom JWT strategy to verify bearer tokens locally using `jsonwebtoken` and the shared `JWT_SECRET`.
+- Category read endpoints are currently implemented (`GET /categories`, `GET /categories/{id}`, `GET /categories/count`); category write endpoints remain part of the broader designed API surface.
+- Default categories are seeded during migration by `src/seeds/category.seed.ts`, which inserts missing defaults without duplicating existing entries.
+- On create, each transaction is persisted with the requesting user's `userId`.
+- All read, update, and delete operations filter by `userId` to prevent cross-user access.
 
 ---
 
@@ -217,11 +231,12 @@ CREATE TABLE categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL,
   name VARCHAR(100) NOT NULL,
-  type VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense')),
+  type SMALLINT NOT NULL,
   is_discretionary BOOLEAN DEFAULT TRUE,
-  is_default BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Default categories are seeded during migration by src/seeds/category.seed.ts
 
 CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -229,7 +244,6 @@ CREATE TABLE transactions (
   amount NUMERIC(12, 2) NOT NULL,
   category_id UUID REFERENCES categories(id),
   description TEXT,
-  date DATE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -261,7 +275,7 @@ The `user_id` columns in the Core Service DB reference the Auth Service's `users
 
 ### Why Kafka over direct REST
 
-Insight generation is background work — it does not need to happen in real time. 
+Insight generation is background work — it does not need to happen in real time.
 
 The alternative would be a synchronous REST call from the Core Service to the AI Provider Service at cron-trigger time. The problem with that is availability coupling: if the AI Provider Service is slow or down when the cron fires, the Core Service blocks and waits. You now need retry logic, timeout handling, and error recovery all in the cron job itself. A failure in one service directly impacts the other.
 
@@ -271,10 +285,10 @@ This is the canonical use case for async messaging: two services that need to ex
 
 ### Topics
 
-| Topic | Producer | Consumer | Purpose |
-|---|---|---|---|
-| `insight-requests` | Core Service | AI Provider Service | Deliver financial summary for insight generation |
-| `insight-results` | AI Provider Service | Core Service | Return generated insight or failure signal |
+| Topic              | Producer            | Consumer            | Purpose                                          |
+| ------------------ | ------------------- | ------------------- | ------------------------------------------------ |
+| `insight-requests` | Core Service        | AI Provider Service | Deliver financial summary for insight generation |
+| `insight-results`  | AI Provider Service | Core Service        | Return generated insight or failure signal       |
 
 ### `insight-requests` message schema
 
@@ -285,24 +299,24 @@ This is the canonical use case for async messaging: two services that need to ex
   "financial_summary": [
     {
       "period": "2024-10",
-      "total_income": 5200.00,
-      "total_expenses": 3850.00,
-      "net": 1350.00,
+      "total_income": 5200.0,
+      "total_expenses": 3850.0,
+      "net": 1350.0,
       "top_categories": [
-        { "name": "Dining", "amount": 620.00 },
-        { "name": "Vacation", "amount": 2500.00 }
+        { "name": "Dining", "amount": 620.0 },
+        { "name": "Vacation", "amount": 2500.0 }
       ]
     },
     {
       "period": "2024-09",
-      "total_income": 4900.00,
-      "total_expenses": 4100.00,
-      "net": 800.00,
+      "total_income": 4900.0,
+      "total_expenses": 4100.0,
+      "net": 800.0,
       "top_categories": [
-        { "name": "Dining", "amount": 550.00 },
-        { "name": "Personal Care", "amount": 250.00 }
+        { "name": "Dining", "amount": 550.0 },
+        { "name": "Personal Care", "amount": 250.0 }
       ]
-    },
+    }
   ]
 }
 ```
@@ -335,16 +349,15 @@ The AI Provider Service constructs a prompt from the financial summary payload, 
 You are a concise personal finance advisor. Analyze the following monthly
 financial summary and return exactly 3 actionable insights.
 Period: {period}
-Income:   ${total_income}
+Income: ${total_income}
 Expenses: ${total_expenses}
-Net:      ${net}
+Net: ${net}
 MoM Net Change: {mom_net_delta_pct}%
 Top spending categories:
 {categories}
 Respond ONLY with a valid JSON array, no preamble, no markdown:
 [{ "title": "...", "detail": "..." }]
 Each detail must be under 80 words. Reference specific numbers from the data.
-
 
 Responses are parsed as JSON. If parsing fails or OpenAI returns an error, the AI Provider Service publishes a `status: failed` result. The Core Service marks the insight record accordingly, ensuring no record is left in a permanent `pending` state.
 
@@ -378,12 +391,12 @@ Angular 19+ with standalone components, signals, and the `@if` / `@for` control 
 
 ### State Management
 
-Angular Signals are used as the primary state management primitive — they are 
-built into Angular 17+ and handle local and shared component state cleanly 
-without additional libraries. RxJS `BehaviorSubject` is used where HTTP streams 
-and async data flows are more naturally expressed reactively, such as in service 
-layers communicating with the API. NgRx is deliberately deferred — it would be 
-appropriate if state complexity grows significantly across the analytics and 
+Angular Signals are used as the primary state management primitive — they are
+built into Angular 17+ and handle local and shared component state cleanly
+without additional libraries. RxJS `BehaviorSubject` is used where HTTP streams
+and async data flows are more naturally expressed reactively, such as in service
+layers communicating with the API. NgRx is deliberately deferred — it would be
+appropriate if state complexity grows significantly across the analytics and
 insights domains, but adds unnecessary overhead at this scope.
 
 ### API Layer
@@ -394,7 +407,7 @@ Each domain has a dedicated Angular service (`AuthService`, `TransactionService`
 
 ## 9. Security Model
 
-**JWT authentication:** Short-lived access tokens (15 min) issued by Auth Service. Core Service validates tokens locally using the shared secret — no network round-trip to Auth Service on every request.
+**JWT authentication:** Short-lived access tokens (15 min) issued by Auth Service. Core Service validates tokens locally using the shared secret — no network round-trip to Auth Service on every request. The current implementation uses LoopBack's `AuthenticationComponent` and a custom JWT strategy backed by `jsonwebtoken`.
 
 **Data scoping:** Every Core Service database query is filtered by `user_id` extracted from the verified JWT. Users can only read and write their own data. There is no mechanism to enumerate another user's records via the API.
 
@@ -450,16 +463,16 @@ Each domain has a dedicated Angular service (`AuthService`, `TransactionService`
 
 ## 12. Technology Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Angular 19+ (TypeScript), standalone components, signals |
-| Backend | LoopBack 4 (Node.js / TypeScript) — all three services |
-| Database | PostgreSQL — one instance per service |
-| Message Broker | Apache Kafka (KafkaJS) |
-| AI | OpenAI API — `gpt-4o-mini` default, configurable |
-| Auth | JWT (`jsonwebtoken`), bcrypt |
-| Scheduling | `node-cron` — nightly insight trigger in Core Service |
-| Containerization | Docker + Docker Compose for local orchestration |
+| Layer            | Technology                                               |
+| ---------------- | -------------------------------------------------------- |
+| Frontend         | Angular 19+ (TypeScript), standalone components, signals |
+| Backend          | LoopBack 4 (Node.js / TypeScript) — all three services   |
+| Database         | PostgreSQL — one instance per service                    |
+| Message Broker   | Apache Kafka (KafkaJS)                                   |
+| AI               | OpenAI API — `gpt-4o-mini` default, configurable         |
+| Auth             | JWT (`jsonwebtoken`), bcrypt                             |
+| Scheduling       | `node-cron` — nightly insight trigger in Core Service    |
+| Containerization | Docker + Docker Compose for local orchestration          |
 
 ---
 
@@ -519,5 +532,5 @@ This log records key decisions made during design, the alternatives considered, 
 
 ---
 
-*Finsight — Architecture Document v1.0*
-*This is a living document. Decisions will be revisited as the system evolves.*
+_Finsight — Architecture Document v1.0_
+_This is a living document. Decisions will be revisited as the system evolves._

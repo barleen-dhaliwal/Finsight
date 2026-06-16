@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {AuthServiceApplication} from './application';
 
 export async function migrate(args: string[]) {

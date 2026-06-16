@@ -11,8 +11,6 @@ import path from 'path';
 import {MySequence} from './sequence';
 import dotenv from 'dotenv';
 
-dotenv.config();
-
 export {ApplicationConfig};
 
 export class AuthServiceApplication extends BootMixin(

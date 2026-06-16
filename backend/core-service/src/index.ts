@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {ApplicationConfig, CoreServiceApplication} from './application';
 
 export * from './application';

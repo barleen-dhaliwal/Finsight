@@ -9,6 +9,11 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
+import {
+  AuthenticationComponent,
+  registerAuthenticationStrategy,
+} from '@loopback/authentication';
+import {JwtService, JwtStrategy} from './auth';
 
 export {ApplicationConfig};
 
@@ -29,6 +34,28 @@ export class CoreServiceApplication extends BootMixin(
       path: '/explorer',
     });
     this.component(RestExplorerComponent);
+    this.component(AuthenticationComponent);
+    this.bind('services.JwtService').toClass(JwtService);
+    registerAuthenticationStrategy(this, JwtStrategy);
+
+    this.api({
+      openapi: '3.0.0',
+      info: {
+        title: 'Core Service API',
+        version: '1.0.0',
+      },
+      paths: {},
+      components: {
+        securitySchemes: {
+          jwt: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+      security: [{jwt: []}],
+    });
 
     this.projectRoot = __dirname;
     // Customize @loopback/boot Booter Conventions here

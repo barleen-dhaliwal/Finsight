@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {ApplicationConfig, AuthServiceApplication} from './application';
 
 export * from './application';
