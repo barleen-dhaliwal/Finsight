@@ -4,6 +4,7 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
+  Where,
 } from '@loopback/repository';
 import {
   post,
@@ -67,10 +68,13 @@ export class TransactionController {
     description: 'Transaction model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(): Promise<Count> {
-    return this.transactionRepository.count({
-      userId: this.currentUserId,
-    });
+  async count(
+    @param.where(Transaction) where?: Where<Transaction>,
+  ): Promise<Count> {
+    const scopedWhere: Where<Transaction> = {
+      and: [{userId: this.currentUserId}, ...(where ? [where] : [])],
+    };
+    return this.transactionRepository.count(scopedWhere);
   }
 
   @get('/transactions')
@@ -88,13 +92,18 @@ export class TransactionController {
   async find(
     @param.filter(Transaction) filter?: Filter<Transaction>,
   ): Promise<Transaction[]> {
-    return this.transactionRepository.find({
+    const finalFilter: Filter<Transaction> = {
       ...filter,
       where: {
-        ...(filter?.where ?? {}),
-        userId: this.currentUserId,
+        and: [
+          {userId: this.currentUserId},
+          ...(filter?.where ? [filter.where] : []),
+        ],
       },
-    });
+      order: filter?.order ?? ['transactionDate DESC'],
+    };
+
+    return this.transactionRepository.find(finalFilter);
   }
 
   @get('/transactions/{id}')

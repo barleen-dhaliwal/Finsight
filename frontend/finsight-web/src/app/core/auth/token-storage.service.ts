@@ -21,7 +21,7 @@ export class TokenStorageService {
     return localStorage.getItem(this.refreshTokenKey);
   }
 
-  clear(): void {
+  clearTokens(): void {
     localStorage.removeItem(this.accessTokenKey);
     localStorage.removeItem(this.refreshTokenKey);
   }

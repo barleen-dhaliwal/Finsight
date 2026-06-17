@@ -12,7 +12,7 @@
     font-size: 2rem;
     font-weight: 700;
     margin: 0 0 0.25rem;
-    color: #1f2937;
+    color: #0b1b2b;
   }
 
   .subtitle {
@@ -31,19 +31,51 @@
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
+/* Keep card content aligned and centered layout-wise */
+.transaction-panel mat-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-form {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Dark card adjustments for better contrast and readability */
+.transaction-panel,
+.filter-panel,
+.table-panel {
+  /* Slightly lighter dark to avoid overly black cards */
+  background: #0f1724;
+  color: #e6eef8;
+}
+
+/* Make card titles prominent and readable */
 .transaction-panel mat-card-title,
 .filter-panel mat-card-title,
 .table-panel mat-card-title {
+  color: #f8fafc;
   font-size: 1.05rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 0.75rem;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .transaction-panel mat-card-content,
 .filter-panel mat-card-content,
 .table-panel mat-card-content {
-  padding: 1.5rem;
+  color: #cbd5e1;
+  padding: 1.25rem;
+}
+
+.transaction-panel mat-card-content,
+.filter-panel mat-card-content,
+.table-panel mat-card-content {
+  /* padding already set above */
 }
 
 .transaction-panel mat-divider,
@@ -61,13 +93,19 @@
 
 .form-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(200px, 1fr));
+  /* Use three columns so the top form fills the card space evenly */
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
   gap: 1rem;
 }
 
+/* Filter panel needs four columns to keep filters on one row on wide screens */
+.filter-panel .form-row {
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+}
+
 .form-row.form-row-full {
-  grid-template-columns: 1fr auto;
-  align-items: center;
+  grid-template-columns: 1fr;
+  align-items: stretch;
 }
 
 .form-field {
@@ -108,12 +146,14 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
-  min-width: 680px;
+  table-layout: fixed; /* enforce our percentage column widths to avoid auto gaps */
+  border-spacing: 0;
+  box-sizing: border-box;
 }
 
 .transactions-table th,
 .transactions-table td {
-  padding: 0.85rem 0.9rem;
+  padding: 0.6rem 0.7rem;
   text-align: left;
   vertical-align: middle;
 }
@@ -123,18 +163,80 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6b7280;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  color: #9ca3af;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
 }
 
 .transactions-table td {
-  color: #111827;
-  border-bottom: 1px solid #f3f4f6;
+  color: #e6eef8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .transactions-table tr:hover {
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Set column width proportions to use card space better */
+.transactions-table th:nth-child(1),
+.transactions-table td:nth-child(1) {
+  width: 12% !important; /* Date */
+}
+.transactions-table th:nth-child(2),
+.transactions-table td:nth-child(2) {
+  width: 32% !important; /* Description narrower */
+}
+.transactions-table th:nth-child(3),
+.transactions-table td:nth-child(3) {
+  width: 18% !important; /* Category */
+}
+.transactions-table th:nth-child(4),
+.transactions-table td:nth-child(4) {
+  width: 20% !important; /* Amount */
+}
+.transactions-table th:nth-child(5),
+.transactions-table td:nth-child(5) {
+  width: 9% !important; /* Type */
+}
+.transactions-table th:nth-child(6),
+.transactions-table td:nth-child(6) {
+  width: 9% !important; /* Actions */
+}
+
+/* Truncate long descriptions to keep rows tidy */
+.transactions-table td:nth-child(2) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* keep as table-cell so column widths from colgroup are respected */
+}
+
+/* Ensure cells use border-box so padding doesn't create unexpected gaps */
+.transactions-table th,
+.transactions-table td {
+  box-sizing: border-box;
+}
+
+/* Give prefix (currency) a bit of spacing to avoid overlap */
+.mat-form-field .mat-prefix {
+  margin-right: 8px;
+  top: 0; /* ensure it's aligned */
+}
+
+/* Make table and card content backgrounds consistent */
+.table-panel mat-card-content,
+.transaction-panel mat-card-content,
+.filter-panel mat-card-content {
+  background: transparent;
+}
+.transactions-table {
+  background: transparent;
+}
+
+/* Ensure form labels are readable on dark cards */
+.transaction-panel .mat-form-field-label,
+.transaction-panel .mat-form-field-infix {
+  color: #cbd5e1 !important;
 }
 
 .transactions-table td.expense {
@@ -155,6 +257,27 @@
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+/* Type column: align with header and color the badge for income/expense */
+.transactions-table td:nth-child(5) {
+  text-align: left;
+}
+.transactions-table td:nth-child(5) .badge {
+  justify-content: flex-start;
+  padding: 0.2rem 0.5rem;
+  min-width: 72px;
+  border-radius: 0.5rem;
+}
+.transactions-table td.expense .badge {
+  background: rgba(185, 28, 28, 0.1);
+  color: #b91c1c;
+  font-weight: 700;
+}
+.transactions-table td.income .badge {
+  background: rgba(4, 120, 87, 0.1);
+  color: #047857;
+  font-weight: 700;
 }
 
 .badge.discretionary {
@@ -215,3 +338,5 @@
     padding: 0.65rem 0.7rem;
   }
 }
+
+/* Debug styles removed */

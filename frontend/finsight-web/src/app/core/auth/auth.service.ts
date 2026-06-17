@@ -29,6 +29,16 @@ export class AuthService {
     );
   }
 
+  refresh(refreshToken: string): Observable<AuthTokens> {
+    return this.http
+      .post<AuthTokens>(`${environment.authServiceUrl}/auth/refresh`, { refreshToken })
+      .pipe(
+        tap((tokens) => {
+          this.tokenStorage.saveTokens(tokens);
+        })
+      );
+  }
+
   isAccessTokenValid(): boolean {
     const token = this.tokenStorage.getAccessToken();
     if (!token) {
@@ -52,7 +62,7 @@ export class AuthService {
       .pipe(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         tap((_) => {
-          this.tokenStorage.clear();
+          this.tokenStorage.clearTokens();
         })
       );
   }

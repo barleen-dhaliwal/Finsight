@@ -41,11 +41,22 @@ export class Transaction extends Entity {
   })
   amount: number;
 
+  @property({
+    type: 'date',
+    required: true,
+    postgresql: {
+      columnName: 'transaction_date',
+      dataType: 'timestamptz',
+    },
+  })
+  transactionDate: Date;
+
   @belongsTo(
     () => Category,
     {keyFrom: 'categoryId', keyTo: 'id'},
     {
       name: 'category_id',
+      required: true,
       postgresql: {
         columnName: 'category_id',
         dataType: 'uuid',
@@ -53,6 +64,7 @@ export class Transaction extends Entity {
     },
   )
   categoryId: string;
+
   @property({
     type: 'string',
   })
