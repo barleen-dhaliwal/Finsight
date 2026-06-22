@@ -1,5 +1,5 @@
 import {BootMixin} from '@loopback/boot';
-import {ApplicationConfig} from '@loopback/core';
+import {ApplicationConfig, BindingScope} from '@loopback/core';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
@@ -14,6 +14,8 @@ import {
   registerAuthenticationStrategy,
 } from '@loopback/authentication';
 import {JwtService, JwtStrategy} from './auth';
+import {KafkaBindings} from './keys';
+import {KafkaProvider} from './services';
 
 export {ApplicationConfig};
 
@@ -37,6 +39,10 @@ export class CoreServiceApplication extends BootMixin(
     this.component(AuthenticationComponent);
     this.bind('services.JwtService').toClass(JwtService);
     registerAuthenticationStrategy(this, JwtStrategy);
+
+    this.bind(KafkaBindings.CLIENT)
+      .toProvider(KafkaProvider)
+      .inScope(BindingScope.SINGLETON);
 
     this.api({
       openapi: '3.0.0',

@@ -11,7 +11,6 @@ export class AnalyticsController {
   constructor(
     @service(AnalyticsService)
     private analyticsService: AnalyticsService,
-
     @inject(SecurityBindings.USER)
     private currentUser: UserProfile,
   ) {}

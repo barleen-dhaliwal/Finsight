@@ -1,7 +1,7 @@
-import {model, property} from '@loopback/repository';
+import {Model, model, property} from '@loopback/repository';
 
 @model()
-export class ExpenseCategorySummary {
+export class ExpenseCategorySummary extends Model {
   @property({
     type: 'string',
     required: true,
@@ -13,10 +13,16 @@ export class ExpenseCategorySummary {
     required: true,
   })
   amount: number;
+
+  @property({
+    type: 'number',
+    required: true,
+  })
+  isDiscretionary: boolean;
 }
 
 @model()
-export class AnalyticsSummary {
+export class AnalyticsSummary extends Model {
   @property({type: 'number', required: true})
   totalIncome: number;
 
@@ -28,6 +34,12 @@ export class AnalyticsSummary {
 
   @property({type: 'number', required: true})
   transactionCount: number;
+
+  @property({type: 'number', required: true})
+  discretionaryExpense: number;
+
+  @property({type: 'number', required: true})
+  essentialExpense: number;
 
   @property.array(ExpenseCategorySummary)
   topExpenseCategories: ExpenseCategorySummary[];

@@ -59,6 +59,7 @@
     "@loopback/service-proxy": "^7.0.14",
     "dotenv": "^17.4.2",
     "jsonwebtoken": "^9.0.3",
+    "kafkajs": "^2.2.4",
     "loopback-connector-postgresql": "^7.2.3",
     "tslib": "^2.0.0"
   },
