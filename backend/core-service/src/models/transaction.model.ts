@@ -94,7 +94,7 @@ export class Transaction extends Entity {
 }
 
 export interface TransactionRelations {
-  // describe navigational properties here
+  category?: Category;
 }
 
 export type TransactionWithRelations = Transaction & TransactionRelations;
