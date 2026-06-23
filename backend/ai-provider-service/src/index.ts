@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {ApplicationConfig, AiProviderServiceApplication} from './application';
 
 export * from './application';

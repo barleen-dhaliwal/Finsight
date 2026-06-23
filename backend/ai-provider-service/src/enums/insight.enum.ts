@@ -10,15 +10,3 @@ export enum InsightSeverity {
   Medium,
   High,
 }
-
-export enum InsightStatus {
-  Pending,
-  Ready,
-  Failed,
-}
-
-export enum InsightGenerationStatus {
-  Pending,
-  Ready,
-  Failed,
-}

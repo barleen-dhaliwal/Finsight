@@ -6,7 +6,7 @@ import {KafkaBindings} from '../keys';
 import {GenerateInsightsDto, MonthlyAnalyticsSummary} from '../models';
 import {InsightGenerationRepository} from '../repositories';
 import {AnalyticsService} from './analytics.service';
-import {KafkaTopics} from '../constants/kafka-topics';
+import {KAFKA_TOPICS} from '../constants/kafka-topics';
 
 @injectable({scope: BindingScope.SINGLETON})
 export class InsightService {
@@ -16,10 +16,8 @@ export class InsightService {
   constructor(
     @inject(KafkaBindings.CLIENT)
     private kafka: Kafka,
-
     @repository(InsightGenerationRepository)
     private insightGenerationRepository: InsightGenerationRepository,
-
     @service(AnalyticsService)
     private analyticsService: AnalyticsService,
   ) {
@@ -65,7 +63,7 @@ export class InsightService {
     } as GenerateInsightsDto;
 
     await this.producer.send({
-      topic: KafkaTopics.INSIGHT_REQUESTS,
+      topic: KAFKA_TOPICS.INSIGHT_REQUESTS,
       messages: [
         {
           key: userId,
